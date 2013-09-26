@@ -129,6 +129,11 @@ class Remote_Picasa extends Remote
             ));
 		}
         $result = $this->http->getResponseText();
+		
+		//In ra xem cấu trúc của Photo
+		//echo $result;
+		preg_match('#<gphoto:id>(\d+)</gphoto:id>#', $result, $match);
+		$id = $match[1];
         preg_match('#<gphoto:width>(\d+)</gphoto:width>#', $result, $match);
 		$width = $match[1];
 		preg_match('#<gphoto:height>(\d+)</gphoto:height>#', $result, $match);
@@ -139,8 +144,8 @@ class Remote_Picasa extends Remote
 		$size = ($this->_size !== NULL) ? $this->_size :  max($width, $height);
         $url = str_replace(basename($url), 's' . $size . '/' . basename($url), $url);
         
-		return $url;
-    }
+		return array($id, $width, $height, $url);
+    }	
     
     protected function _doTransload()
     {
@@ -148,6 +153,29 @@ class Remote_Picasa extends Remote
             ':method' => __METHOD__
         ));
     }
+	
+	/**
+	 * Delete an album by photoId
+	 *
+	 * @param string	photoid
+     * @return boolean TRUE if photo was deleted
+     * @throws Exception if Http has an error
+	*/
+	public function deletePhoto($albumId, $photoId)
+	{
+		$this->_checkPermission(__METHOD__);		
+		$this->http->setHeader(array(
+			"Authorization: GoogleLogin auth=" . $this->get('cookieLogin'),
+			"MIME-Version: 1.0",
+			"GData-Version: 3.0",
+			"If-Match: *"
+		));
+		$this->http->execute('https://picasaweb.google.com/data/entry/api/user/' . $this->_username. '/albumid/' . $albumId."/photoid/".$photoId, 'DELETE');		
+		if($this->http->errors) {
+            $this->_throwHttpError(__METHOD__);
+        }
+		return ($this->http->getResponseHeaders('status') == 200);
+	}
     
     /**
 	 * Delete an album by albumid
@@ -158,7 +186,7 @@ class Remote_Picasa extends Remote
 	*/
 	public function deleteAlbum($albumId)
 	{
-		$this->checkPermission(__METHOD__);
+		$this->_checkPermission(__METHOD__);
 		
 		$this->http->setHeader(array(
 			"Authorization: GoogleLogin auth=" . $this->get('cookieLogin'),
