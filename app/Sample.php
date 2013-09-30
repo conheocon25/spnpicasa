@@ -8,7 +8,7 @@
     
 	//Gán Album và up lên 1 ảnh đã được chọn.
     $uploader->setAlbumId('5925180481188894705');	                         
-    //$arr = $uploader->upload('test.png');
+    $arr = $uploader->upload('test.png');
 	//print_r($arr);
 	
 	//xóa thử 5927875886455859442
