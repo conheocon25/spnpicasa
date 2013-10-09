@@ -91,10 +91,8 @@
 	print_r($http->getResponseHeaders());
 	echo $http->getResponseText();
 */
-namespace ChipVN;
-
-class Http
-{
+namespace MVC\Library;
+class Http{
 	/**
 	 * Url target
 	 *
